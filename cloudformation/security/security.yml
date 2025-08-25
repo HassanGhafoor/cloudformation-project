@@ -2,6 +2,8 @@ AWSTemplateFormatVersion: "2010-09-09"
 Description: Security groups stack
 
 Parameters:
+  EnvironmentName:
+    Type: String
   VpcId:
     Type: String
   PublicSubnet1:
@@ -13,27 +15,38 @@ Resources:
   BastionSG:
     Type: AWS::EC2::SecurityGroup
     Properties:
-      GroupDescription: Allow SSH from internet
+      GroupDescription: !Sub "${EnvironmentName}-bastion-sg"
       VpcId: !Ref VpcId
       SecurityGroupIngress:
         - IpProtocol: tcp
           FromPort: 22
           ToPort: 22
           CidrIp: 0.0.0.0/0
+      Tags:
+        - Key: Name
+          Value: !Sub "${EnvironmentName}-bastion-sg"
 
   AppSG:
     Type: AWS::EC2::SecurityGroup
     Properties:
-      GroupDescription: Allow HTTP from ALB
+      GroupDescription: !Sub "${EnvironmentName}-app-sg"
       VpcId: !Ref VpcId
       SecurityGroupIngress:
         - IpProtocol: tcp
           FromPort: 80
           ToPort: 80
           SourceSecurityGroupId: !Ref BastionSG
+      Tags:
+        - Key: Name
+          Value: !Sub "${EnvironmentName}-app-sg"
 
 Outputs:
   BastionSG:
     Value: !Ref BastionSG
+    Export:
+      Name: !Sub "${EnvironmentName}-BastionSG"
+
   AppSG:
     Value: !Ref AppSG
+    Export:
+      Name: !Sub "${EnvironmentName}-AppSG"
