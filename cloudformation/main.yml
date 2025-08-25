@@ -1,9 +1,13 @@
+Parameters:
+  EnvironmentName:
+    Type: String
+    Description: An environment name that will be prefixed to resources
+
 Resources:
   NetworkStack:
     Type: AWS::CloudFormation::Stack
     Properties:
       TemplateURL: https://cloudformation-vpc-project-hasan07.s3.us-east-1.amazonaws.com/networking.yml
-
       Parameters:
         EnvironmentName: !Ref EnvironmentName
 
