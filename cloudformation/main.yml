@@ -1,0 +1,34 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: Root stack for VPC + Bastion + ALB + ASG
+
+Resources:
+  NetworkingStack:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: ./networking/networking.yml
+
+  SecurityStack:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: ./security/security.yml
+      Parameters:
+        VpcId: !GetAtt NetworkingStack.Outputs.VpcId
+        PublicSubnet1: !GetAtt NetworkingStack.Outputs.PublicSubnet1
+        PublicSubnet2: !GetAtt NetworkingStack.Outputs.PublicSubnet2
+
+  ComputeStack:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: ./compute/compute.yml
+      Parameters:
+        VpcId: !GetAtt NetworkingStack.Outputs.VpcId
+        PublicSubnet1: !GetAtt NetworkingStack.Outputs.PublicSubnet1
+        PublicSubnet2: !GetAtt NetworkingStack.Outputs.PublicSubnet2
+        PrivateSubnet1: !GetAtt NetworkingStack.Outputs.PrivateSubnet1
+        PrivateSubnet2: !GetAtt NetworkingStack.Outputs.PrivateSubnet2
+        BastionSG: !GetAtt SecurityStack.Outputs.BastionSG
+        AppSG: !GetAtt SecurityStack.Outputs.AppSG
+
+Outputs:
+  ALBDNS:
+    Value: !GetAtt ComputeStack.Outputs.LoadBalancerDNS
