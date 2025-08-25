@@ -1,5 +1,5 @@
 AWSTemplateFormatVersion: "2010-09-09"
-Description: Root CloudFormation template to orchestrate Networking, Security, and Compute stacks.
+Description: Root CloudFormation template to orchestrate Networking, Security, and Compute Stacks.
 
 Parameters:
   EnvironmentName:
