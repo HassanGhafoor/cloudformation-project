@@ -2,14 +2,15 @@ Resources:
   NetworkStack:
     Type: AWS::CloudFormation::Stack
     Properties:
-      TemplateURL: https://s3.amazonaws.com/cloudformation-vpc-project-hasan07/networking.yml
+      TemplateURL: https://cloudformation-vpc-project-hasan07.s3.us-east-1.amazonaws.com/networking.yml
+
       Parameters:
         EnvironmentName: !Ref EnvironmentName
 
   SecurityStack:
     Type: AWS::CloudFormation::Stack
     Properties:
-      TemplateURL: https://s3.amazonaws.com/cloudformation-vpc-project-hasan07/security.yml
+      TemplateURL: https://cloudformation-vpc-project-hasan07.s3.us-east-1.amazonaws.com/security.yml
       Parameters:
         EnvironmentName: !Ref EnvironmentName
         VPCId: !GetAtt NetworkStack.Outputs.VPCId
@@ -17,7 +18,7 @@ Resources:
   ComputeStack:
     Type: AWS::CloudFormation::Stack
     Properties:
-      TemplateURL: https://s3.amazonaws.com/cloudformation-vpc-project-hasan07/compute.yml
+      TemplateURL: https://cloudformation-vpc-project-hasan07.s3.us-east-1.amazonaws.com/compute.yml
       Parameters:
         EnvironmentName: !Ref EnvironmentName
         VPCId: !GetAtt NetworkStack.Outputs.VPCId
