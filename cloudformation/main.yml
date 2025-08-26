@@ -59,3 +59,8 @@ Outputs:
   PrivateSubnet2:
     Description: Private Subnet 2
     Value: !GetAtt NetworkStack.Outputs.PrivateSubnet2
+
+  LoadBalancerDNS:
+    Description: Application Load Balancer DNS name
+    Value: !GetAtt ComputeStack.Outputs.LoadBalancerDNS
+

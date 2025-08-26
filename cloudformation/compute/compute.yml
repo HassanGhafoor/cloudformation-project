@@ -2,6 +2,9 @@ AWSTemplateFormatVersion: "2010-09-09"
 Description: Compute resources - Bastion, ALB, ASG
 
 Parameters:
+  EnvironmentName:
+    Type: String
+    Description: Environment name (e.g. dev, prod)
   VpcId:
     Type: String
   PublicSubnet1:
@@ -14,7 +17,9 @@ Parameters:
     Type: String
   BastionSG:
     Type: String
-  AppSG:
+  ALBSG:
+    Type: String
+  PrivateInstanceSG:
     Type: String
 
 Resources:
@@ -32,7 +37,7 @@ Resources:
     Properties:
       ImageId: ami-08c40ec9ead489470
       InstanceType: t2.micro
-      SecurityGroups: [!Ref AppSG]
+      SecurityGroups: [!Ref PrivateInstanceSG]
       UserData:
         Fn::Base64: |
           #!/bin/bash
@@ -59,7 +64,7 @@ Resources:
       Subnets:
         - !Ref PublicSubnet1
         - !Ref PublicSubnet2
-      SecurityGroups: [!Ref AppSG]
+      SecurityGroups: [!Ref ALBSG]
 
   AppTargetGroup:
     Type: AWS::ElasticLoadBalancingV2::TargetGroup
