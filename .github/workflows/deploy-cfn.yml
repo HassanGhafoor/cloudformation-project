@@ -3,7 +3,7 @@ name: Deploy CloudFormation
 on:
   push:
     branches:
-      - main  # or whichever branch you want
+      - main  # or whichever Branch you want
 
 jobs:
   deploy:
