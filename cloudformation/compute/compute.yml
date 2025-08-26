@@ -15,11 +15,11 @@ Parameters:
     Type: String
   PrivateSubnet2:
     Type: String
-  BastionSG:
+  BastionSecurityGroup:
     Type: String
-  ALBSG:
+  ALBSecurityGroup:
     Type: String
-  PrivateInstanceSG:
+  AppSecurityGroup:
     Type: String
   KeyName:
     Type: String
@@ -32,7 +32,7 @@ Resources:
       InstanceType: t2.micro
       ImageId: ami-08c40ec9ead489470 # Ubuntu 22.04 us-east-1
       SubnetId: !Ref PublicSubnet1
-      SecurityGroupIds: [!Ref BastionSG]
+      SecurityGroupIds: [!Ref BastionSecurityGroup]
       KeyName: !Ref KeyName
 
   AppLaunchTemplate:
@@ -42,7 +42,7 @@ Resources:
         ImageId: ami-08c40ec9ead489470
         InstanceType: t2.micro
         SecurityGroupIds:
-          - !Ref PrivateInstanceSG
+          - !Ref AppSecurityGroup
         KeyName: !Ref KeyName
         UserData:
           Fn::Base64: |
@@ -52,8 +52,18 @@ Resources:
             echo "Hello from AutoScaling instance" > /var/www/html/index.html
             systemctl start apache2
 
+  AppTargetGroup:
+    Type: AWS::ElasticLoadBalancingV2::TargetGroup
+    Properties:
+      VpcId: !Ref VpcId
+      Port: 80
+      Protocol: HTTP
+      TargetType: instance
+      HealthCheckPath: /
+
   AppAutoScalingGroup:
     Type: AWS::AutoScaling::AutoScalingGroup
+    DependsOn: AppTargetGroup
     Properties:
       VPCZoneIdentifier:
         - !Ref PrivateSubnet1
@@ -72,16 +82,7 @@ Resources:
       Subnets:
         - !Ref PublicSubnet1
         - !Ref PublicSubnet2
-      SecurityGroups: [!Ref ALBSG]
-
-  AppTargetGroup:
-    Type: AWS::ElasticLoadBalancingV2::TargetGroup
-    Properties:
-      VpcId: !Ref VpcId
-      Port: 80
-      Protocol: HTTP
-      TargetType: instance
-      HealthCheckPath: /
+      SecurityGroups: [!Ref ALBSecurityGroup]
 
   AppListener:
     Type: AWS::ElasticLoadBalancingV2::Listener
@@ -94,5 +95,7 @@ Resources:
           TargetGroupArn: !Ref AppTargetGroup
 
 Outputs:
-  LoadBalancerDNS:
+  BastionHost:
+    Value: !Ref BastionHost
+  ApplicationLoadBalancer:
     Value: !GetAtt AppLB.DNSName

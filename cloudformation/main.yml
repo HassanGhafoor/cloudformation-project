@@ -1,4 +1,4 @@
-AWSTemplateFormatVersion: "2010-09-09"
+AWSTemplateFormatVersion: '2010-09-09'
 Description: Root stack for VPC project
 
 Parameters:
@@ -6,38 +6,46 @@ Parameters:
     Type: String
     Default: dev
   KeyName:
-    Type: String
-    Description: EC2 Key Pair for SSH
-    Default: my-key   # ✅ Added this line
+    Description: Name of an existing EC2 KeyPair to enable SSH access
+    Type: AWS::EC2::KeyPair::KeyName
 
 Resources:
   NetworkStack:
     Type: AWS::CloudFormation::Stack
     Properties:
-      TemplateURL: ./network.yml
+      TemplateURL: https://my-vpc-project-templates.s3.amazonaws.com/networking.yml
       Parameters:
         EnvironmentName: !Ref EnvironmentName
 
   SecurityStack:
     Type: AWS::CloudFormation::Stack
     Properties:
-      TemplateURL: ./security.yml
+      TemplateURL: https://my-vpc-project-templates.s3.amazonaws.com/security.yml
       Parameters:
-        VpcId: !GetAtt NetworkStack.Outputs.VpcId
         EnvironmentName: !Ref EnvironmentName
+        VpcId: !GetAtt NetworkStack.Outputs.VpcId
+        PublicSubnet1: !GetAtt NetworkStack.Outputs.PublicSubnet1
+        PublicSubnet2: !GetAtt NetworkStack.Outputs.PublicSubnet2
 
   ComputeStack:
     Type: AWS::CloudFormation::Stack
     Properties:
-      TemplateURL: ./compute.yml
+      TemplateURL: https://my-vpc-project-templates.s3.amazonaws.com/compute.yml
       Parameters:
+        EnvironmentName: !Ref EnvironmentName
+        KeyName: !Ref KeyName
         VpcId: !GetAtt NetworkStack.Outputs.VpcId
         PublicSubnet1: !GetAtt NetworkStack.Outputs.PublicSubnet1
         PublicSubnet2: !GetAtt NetworkStack.Outputs.PublicSubnet2
         PrivateSubnet1: !GetAtt NetworkStack.Outputs.PrivateSubnet1
         PrivateSubnet2: !GetAtt NetworkStack.Outputs.PrivateSubnet2
-        BastionSG: !GetAtt SecurityStack.Outputs.BastionSG
-        ALBSG: !GetAtt SecurityStack.Outputs.ALBSG
-        PrivateInstanceSG: !GetAtt SecurityStack.Outputs.PrivateInstanceSG
-        EnvironmentName: !Ref EnvironmentName
-        KeyName: !Ref KeyName   # ✅ This ensures KeyName is passed to compute stack
+        BastionSecurityGroup: !GetAtt SecurityStack.Outputs.BastionSecurityGroup
+        AppSecurityGroup: !GetAtt SecurityStack.Outputs.AppSecurityGroup
+
+Outputs:
+  VpcId:
+    Value: !GetAtt NetworkStack.Outputs.VpcId
+  BastionHost:
+    Value: !GetAtt ComputeStack.Outputs.BastionHost
+  ALB:
+    Value: !GetAtt ComputeStack.Outputs.ApplicationLoadBalancer
