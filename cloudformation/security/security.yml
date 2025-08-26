@@ -1,5 +1,5 @@
 AWSTemplateFormatVersion: "2010-09-09"
-Description: Security resources for VPC project (Security Groups, NACLs, etc.)
+Description: Security resources for VPC project (Security Groups)
 
 Parameters:
   EnvironmentName:
@@ -9,14 +9,6 @@ Parameters:
   VpcId:
     Type: String
     Description: VPC Id for Security Groups
-
-  PublicSubnet1:
-    Type: String
-    Description: First public subnet
-
-  PublicSubnet2:
-    Type: String
-    Description: Second public subnet
 
 Resources:
   BastionSG:
