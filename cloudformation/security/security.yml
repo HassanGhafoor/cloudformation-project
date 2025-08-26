@@ -1,52 +1,76 @@
 AWSTemplateFormatVersion: "2010-09-09"
-Description: Security groups stack
+Description: Security resources for VPC project (Security Groups, NACLs, etc.)
 
 Parameters:
   EnvironmentName:
     Type: String
+    Description: Environment name (e.g. dev, prod)
+
   VpcId:
     Type: String
+    Description: VPC Id for Security Groups
+
   PublicSubnet1:
     Type: String
+    Description: First public subnet
+
   PublicSubnet2:
     Type: String
+    Description: Second public subnet
 
 Resources:
   BastionSG:
     Type: AWS::EC2::SecurityGroup
     Properties:
-      GroupDescription: !Sub "${EnvironmentName}-bastion-sg"
+      GroupDescription: !Sub "${EnvironmentName} Bastion Security Group"
       VpcId: !Ref VpcId
       SecurityGroupIngress:
         - IpProtocol: tcp
           FromPort: 22
           ToPort: 22
           CidrIp: 0.0.0.0/0
-      Tags:
-        - Key: Name
-          Value: !Sub "${EnvironmentName}-bastion-sg"
 
-  AppSG:
+  ALBSG:
     Type: AWS::EC2::SecurityGroup
     Properties:
-      GroupDescription: !Sub "${EnvironmentName}-app-sg"
+      GroupDescription: !Sub "${EnvironmentName} ALB Security Group"
       VpcId: !Ref VpcId
       SecurityGroupIngress:
         - IpProtocol: tcp
           FromPort: 80
           ToPort: 80
+          CidrIp: 0.0.0.0/0
+
+  PrivateInstanceSG:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: !Sub "${EnvironmentName} Private Instance Security Group"
+      VpcId: !Ref VpcId
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: 80
+          ToPort: 80
+          SourceSecurityGroupId: !Ref ALBSG
+        - IpProtocol: tcp
+          FromPort: 22
+          ToPort: 22
           SourceSecurityGroupId: !Ref BastionSG
-      Tags:
-        - Key: Name
-          Value: !Sub "${EnvironmentName}-app-sg"
 
 Outputs:
   BastionSG:
+    Description: Bastion Host Security Group
     Value: !Ref BastionSG
     Export:
       Name: !Sub "${EnvironmentName}-BastionSG"
 
-  AppSG:
-    Value: !Ref AppSG
+  ALBSG:
+    Description: ALB Security Group
+    Value: !Ref ALBSG
     Export:
-      Name: !Sub "${EnvironmentName}-AppSG"
+      Name: !Sub "${EnvironmentName}-ALBSG"
+
+  PrivateInstanceSG:
+    Description: Private Instance Security Group
+    Value: !Ref PrivateInstanceSG
+    Export:
+      Name: !Sub "${EnvironmentName}-PrivateInstanceSG"
