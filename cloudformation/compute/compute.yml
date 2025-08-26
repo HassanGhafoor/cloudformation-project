@@ -27,7 +27,7 @@ Resources:
     Type: AWS::EC2::Instance
     Properties:
       InstanceType: t2.micro
-      ImageId: ami-08c40ec9ead489470 # Ubuntu 22.04 us-east-1, replace per region
+      ImageId: ami-0bbdd8c17ed981ef9 # Ubuntu 22.04 us-east-1
       SubnetId: !Ref PublicSubnet1
       SecurityGroupIds: [!Ref BastionSG]
       KeyName: my-key # replace with your key pair
@@ -35,7 +35,7 @@ Resources:
   AppLaunchConfig:
     Type: AWS::AutoScaling::LaunchConfiguration
     Properties:
-      ImageId: ami-08c40ec9ead489470
+      ImageId: ami-0bbdd8c17ed981ef9 # Ubuntu 22.04 us-east-1
       InstanceType: t2.micro
       SecurityGroups: [!Ref PrivateInstanceSG]
       UserData:
