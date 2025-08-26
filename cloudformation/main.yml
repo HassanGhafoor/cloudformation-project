@@ -1,5 +1,5 @@
 AWSTemplateFormatVersion: '2010-09-09'
-Description: Root stacks for VPC project
+Description: Root stack for VPC project
 
 Parameters:
   EnvironmentName:
@@ -40,12 +40,13 @@ Resources:
         PrivateSubnet1: !GetAtt NetworkStack.Outputs.PrivateSubnet1
         PrivateSubnet2: !GetAtt NetworkStack.Outputs.PrivateSubnet2
         BastionSecurityGroup: !GetAtt SecurityStack.Outputs.BastionSecurityGroup
-        AppSecurityGroup: !GetAtt SecurityStack.Outputs.AppSecurityGroup
+        LoadBalancerSecurityGroup: !GetAtt SecurityStack.Outputs.LoadBalancerSecurityGroup
+        InstanceSecurityGroup: !GetAtt SecurityStack.Outputs.InstanceSecurityGroup
 
 Outputs:
   VpcId:
     Value: !GetAtt NetworkStack.Outputs.VpcId
-  BastionHost:
-    Value: !GetAtt ComputeStack.Outputs.BastionHost
-  ALB:
-    Value: !GetAtt ComputeStack.Outputs.ApplicationLoadBalancer
+  BastionHostId:
+    Value: !GetAtt ComputeStack.Outputs.BastionHostId
+  ALBDNSName:
+    Value: !GetAtt ComputeStack.Outputs.ALBDNSName
