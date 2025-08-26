@@ -1,68 +1,72 @@
-AWSTemplateFormatVersion: "2010-09-09"
-Description: Security resources for VPC project (Security Groups)
+AWSTemplateFormatVersion: '2010-09-09'
+Description: Security resources for VPC Project
 
 Parameters:
   EnvironmentName:
     Type: String
-    Description: Environment name (e.g. dev, prod)
 
-  VpcId:
-    Type: String
-    Description: VPC Id for Security Groups
+  VPCId:
+    Type: AWS::EC2::VPC::Id
+
+  PublicSubnet1:
+    Type: AWS::EC2::Subnet::Id
+
+  PublicSubnet2:
+    Type: AWS::EC2::Subnet::Id
 
 Resources:
-  BastionSG:
+  BastionSecurityGroup:
     Type: AWS::EC2::SecurityGroup
     Properties:
-      GroupDescription: !Sub "${EnvironmentName} Bastion Security Group"
-      VpcId: !Ref VpcId
+      GroupDescription: Enable SSH access to bastion host
+      VpcId: !Ref VPCId
       SecurityGroupIngress:
         - IpProtocol: tcp
           FromPort: 22
           ToPort: 22
           CidrIp: 0.0.0.0/0
 
-  ALBSG:
+  LoadBalancerSecurityGroup:
     Type: AWS::EC2::SecurityGroup
     Properties:
-      GroupDescription: !Sub "${EnvironmentName} ALB Security Group"
-      VpcId: !Ref VpcId
+      GroupDescription: Allow HTTP access to Load Balancer
+      VpcId: !Ref VPCId
       SecurityGroupIngress:
         - IpProtocol: tcp
           FromPort: 80
           ToPort: 80
           CidrIp: 0.0.0.0/0
 
-  PrivateInstanceSG:
+  InstanceSecurityGroup:
     Type: AWS::EC2::SecurityGroup
     Properties:
-      GroupDescription: !Sub "${EnvironmentName} Private Instance Security Group"
-      VpcId: !Ref VpcId
+      GroupDescription: Allow traffic from ALB and Bastion
+      VpcId: !Ref VPCId
       SecurityGroupIngress:
         - IpProtocol: tcp
           FromPort: 80
           ToPort: 80
-          SourceSecurityGroupId: !Ref ALBSG
+          SourceSecurityGroupId: !Ref LoadBalancerSecurityGroup
         - IpProtocol: tcp
           FromPort: 22
           ToPort: 22
-          SourceSecurityGroupId: !Ref BastionSG
+          SourceSecurityGroupId: !Ref BastionSecurityGroup
 
 Outputs:
-  BastionSG:
-    Description: Bastion Host Security Group
-    Value: !Ref BastionSG
+  BastionSecurityGroup:
+    Description: Security Group for Bastion Host
+    Value: !Ref BastionSecurityGroup
     Export:
-      Name: !Sub "${EnvironmentName}-BastionSG"
+      Name: !Sub "${EnvironmentName}-BastionSecurityGroup"
 
-  ALBSG:
-    Description: ALB Security Group
-    Value: !Ref ALBSG
+  LoadBalancerSecurityGroup:
+    Description: Security Group for Load Balancer
+    Value: !Ref LoadBalancerSecurityGroup
     Export:
-      Name: !Sub "${EnvironmentName}-ALBSG"
+      Name: !Sub "${EnvironmentName}-LoadBalancerSecurityGroup"
 
-  PrivateInstanceSG:
-    Description: Private Instance Security Group
-    Value: !Ref PrivateInstanceSG
+  InstanceSecurityGroup:
+    Description: Security Group for EC2 Instances
+    Value: !Ref InstanceSecurityGroup
     Export:
-      Name: !Sub "${EnvironmentName}-PrivateInstanceSG"
+      Name: !Sub "${EnvironmentName}-InstanceSecurityGroup"
