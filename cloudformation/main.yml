@@ -1,34 +1,43 @@
 AWSTemplateFormatVersion: "2010-09-09"
-Description: Root stack - VPC project
+Description: Root stack for VPC project
 
 Parameters:
   EnvironmentName:
     Type: String
-    Default: my-vpc
+    Default: dev
   KeyName:
     Type: String
-    Description: Name of an existing EC2 KeyPair for SSH access
+    Description: EC2 Key Pair for SSH
+    Default: my-key   # ✅ Added this line
 
 Resources:
   NetworkStack:
     Type: AWS::CloudFormation::Stack
     Properties:
-      TemplateURL: network.yml
+      TemplateURL: ./network.yml
       Parameters:
+        EnvironmentName: !Ref EnvironmentName
+
+  SecurityStack:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: ./security.yml
+      Parameters:
+        VpcId: !GetAtt NetworkStack.Outputs.VpcId
         EnvironmentName: !Ref EnvironmentName
 
   ComputeStack:
     Type: AWS::CloudFormation::Stack
     Properties:
-      TemplateURL: compute.yml
+      TemplateURL: ./compute.yml
       Parameters:
-        EnvironmentName: !Ref EnvironmentName
         VpcId: !GetAtt NetworkStack.Outputs.VpcId
         PublicSubnet1: !GetAtt NetworkStack.Outputs.PublicSubnet1
         PublicSubnet2: !GetAtt NetworkStack.Outputs.PublicSubnet2
         PrivateSubnet1: !GetAtt NetworkStack.Outputs.PrivateSubnet1
         PrivateSubnet2: !GetAtt NetworkStack.Outputs.PrivateSubnet2
-        BastionSG: !GetAtt NetworkStack.Outputs.BastionSG
-        ALBSG: !GetAtt NetworkStack.Outputs.ALBSG
-        PrivateInstanceSG: !GetAtt NetworkStack.Outputs.PrivateInstanceSG
-        KeyName: !Ref KeyName
+        BastionSG: !GetAtt SecurityStack.Outputs.BastionSG
+        ALBSG: !GetAtt SecurityStack.Outputs.ALBSG
+        PrivateInstanceSG: !GetAtt SecurityStack.Outputs.PrivateInstanceSG
+        EnvironmentName: !Ref EnvironmentName
+        KeyName: !Ref KeyName   # ✅ This ensures KeyName is passed to compute stack
