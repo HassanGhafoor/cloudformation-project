@@ -1,11 +1,11 @@
-AWSTemplateFormatVersion: '2010-09-09'
+AWSTemplateFormatVersion: "2010-09-09"
 Description: Security resources for VPC Project
 
 Parameters:
   EnvironmentName:
     Type: String
 
-  VPCId:
+  VpcId:
     Type: AWS::EC2::VPC::Id
 
   PublicSubnet1:
@@ -19,7 +19,7 @@ Resources:
     Type: AWS::EC2::SecurityGroup
     Properties:
       GroupDescription: Enable SSH access to bastion host
-      VpcId: !Ref VPCId
+      VpcId: !Ref VpcId
       SecurityGroupIngress:
         - IpProtocol: tcp
           FromPort: 22
@@ -30,7 +30,7 @@ Resources:
     Type: AWS::EC2::SecurityGroup
     Properties:
       GroupDescription: Allow HTTP access to Load Balancer
-      VpcId: !Ref VPCId
+      VpcId: !Ref VpcId
       SecurityGroupIngress:
         - IpProtocol: tcp
           FromPort: 80
@@ -41,7 +41,7 @@ Resources:
     Type: AWS::EC2::SecurityGroup
     Properties:
       GroupDescription: Allow traffic from ALB and Bastion
-      VpcId: !Ref VPCId
+      VpcId: !Ref VpcId
       SecurityGroupIngress:
         - IpProtocol: tcp
           FromPort: 80

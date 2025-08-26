@@ -126,7 +126,7 @@ Resources:
       RouteTableId: !Ref PrivateRouteTable
 
 Outputs:
-  VpcId:   # ✅ exact casing required
+  VpcId:
     Value: !Ref VPC
     Export:
       Name: !Sub "${EnvironmentName}-VpcId"
