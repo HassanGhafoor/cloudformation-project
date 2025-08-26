@@ -1,66 +1,34 @@
 AWSTemplateFormatVersion: "2010-09-09"
-Description: Root CloudFormation template to orchestrate Networking, Security, and Compute Stacks.
+Description: Root stack - VPC project
 
 Parameters:
   EnvironmentName:
     Type: String
-    Description: An environment name that will be prefixed to resource names (e.g. dev, prod)
+    Default: my-vpc
+  KeyName:
+    Type: String
+    Description: Name of an existing EC2 KeyPair for SSH access
 
 Resources:
   NetworkStack:
     Type: AWS::CloudFormation::Stack
     Properties:
-      TemplateURL: https://cloudformation-vpc-project-hasan07.s3.us-east-1.amazonaws.com/networking.yml
+      TemplateURL: network.yml
       Parameters:
         EnvironmentName: !Ref EnvironmentName
-
-  SecurityStack:
-    Type: AWS::CloudFormation::Stack
-    Properties:
-      TemplateURL: https://cloudformation-vpc-project-hasan07.s3.us-east-1.amazonaws.com/security.yml
-      Parameters:
-        EnvironmentName: !Ref EnvironmentName
-        VpcId: !GetAtt NetworkStack.Outputs.VPCId
-        PublicSubnet1: !GetAtt NetworkStack.Outputs.PublicSubnet1
-        PublicSubnet2: !GetAtt NetworkStack.Outputs.PublicSubnet2
 
   ComputeStack:
     Type: AWS::CloudFormation::Stack
     Properties:
-      TemplateURL: https://cloudformation-vpc-project-hasan07.s3.us-east-1.amazonaws.com/compute.yml
+      TemplateURL: compute.yml
       Parameters:
         EnvironmentName: !Ref EnvironmentName
-        VpcId: !GetAtt NetworkStack.Outputs.VPCId
+        VpcId: !GetAtt NetworkStack.Outputs.VpcId
         PublicSubnet1: !GetAtt NetworkStack.Outputs.PublicSubnet1
         PublicSubnet2: !GetAtt NetworkStack.Outputs.PublicSubnet2
         PrivateSubnet1: !GetAtt NetworkStack.Outputs.PrivateSubnet1
         PrivateSubnet2: !GetAtt NetworkStack.Outputs.PrivateSubnet2
-        BastionSG: !GetAtt SecurityStack.Outputs.BastionSG
-        ALBSG: !GetAtt SecurityStack.Outputs.ALBSG
-        PrivateInstanceSG: !GetAtt SecurityStack.Outputs.PrivateInstanceSG
-
-Outputs:
-  VPCId:
-    Description: VPC ID created by Networking stack
-    Value: !GetAtt NetworkStack.Outputs.VPCId
-
-  PublicSubnet1:
-    Description: Public Subnet 1
-    Value: !GetAtt NetworkStack.Outputs.PublicSubnet1
-
-  PublicSubnet2:
-    Description: Public Subnet 2
-    Value: !GetAtt NetworkStack.Outputs.PublicSubnet2
-
-  PrivateSubnet1:
-    Description: Private Subnet 1
-    Value: !GetAtt NetworkStack.Outputs.PrivateSubnet1
-
-  PrivateSubnet2:
-    Description: Private Subnet 2
-    Value: !GetAtt NetworkStack.Outputs.PrivateSubnet2
-
-  LoadBalancerDNS:
-    Description: Application Load Balancer DNS name
-    Value: !GetAtt ComputeStack.Outputs.LoadBalancerDNS
-
+        BastionSG: !GetAtt NetworkStack.Outputs.BastionSG
+        ALBSG: !GetAtt NetworkStack.Outputs.ALBSG
+        PrivateInstanceSG: !GetAtt NetworkStack.Outputs.PrivateInstanceSG
+        KeyName: !Ref KeyName

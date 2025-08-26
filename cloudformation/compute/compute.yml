@@ -21,30 +21,36 @@ Parameters:
     Type: String
   PrivateInstanceSG:
     Type: String
+  KeyName:
+    Type: String
+    Default: my-key
 
 Resources:
   BastionHost:
     Type: AWS::EC2::Instance
     Properties:
       InstanceType: t2.micro
-      ImageId: ami-0bbdd8c17ed981ef9 # Ubuntu 22.04 us-east-1
+      ImageId: ami-08c40ec9ead489470 # Ubuntu 22.04 us-east-1
       SubnetId: !Ref PublicSubnet1
       SecurityGroupIds: [!Ref BastionSG]
-      KeyName: my-key # replace with your key pair
+      KeyName: !Ref KeyName
 
-  AppLaunchConfig:
-    Type: AWS::AutoScaling::LaunchConfiguration
+  AppLaunchTemplate:
+    Type: AWS::EC2::LaunchTemplate
     Properties:
-      ImageId: ami-0bbdd8c17ed981ef9 # Ubuntu 22.04 us-east-1
-      InstanceType: t2.micro
-      SecurityGroups: [!Ref PrivateInstanceSG]
-      UserData:
-        Fn::Base64: |
-          #!/bin/bash
-          apt-get update -y
-          apt-get install -y apache2
-          echo "Hello from AutoScaling instance" > /var/www/html/index.html
-          systemctl start apache2
+      LaunchTemplateData:
+        ImageId: ami-08c40ec9ead489470
+        InstanceType: t2.micro
+        SecurityGroupIds:
+          - !Ref PrivateInstanceSG
+        KeyName: !Ref KeyName
+        UserData:
+          Fn::Base64: |
+            #!/bin/bash
+            apt-get update -y
+            apt-get install -y apache2
+            echo "Hello from AutoScaling instance" > /var/www/html/index.html
+            systemctl start apache2
 
   AppAutoScalingGroup:
     Type: AWS::AutoScaling::AutoScalingGroup
@@ -52,7 +58,9 @@ Resources:
       VPCZoneIdentifier:
         - !Ref PrivateSubnet1
         - !Ref PrivateSubnet2
-      LaunchConfigurationName: !Ref AppLaunchConfig
+      LaunchTemplate:
+        LaunchTemplateId: !Ref AppLaunchTemplate
+        Version: !GetAtt AppLaunchTemplate.LatestVersionNumber
       MinSize: 2
       MaxSize: 4
       DesiredCapacity: 2
